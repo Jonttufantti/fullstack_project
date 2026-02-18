@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { sequelize } from './config/database';
+import authRoutes from './routes/auth';
 
 dotenv.config();
 
@@ -10,6 +11,8 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/auth', authRoutes);
 
 app.get('/api/health', async (_req, res) => {
   try {
@@ -23,7 +26,8 @@ app.get('/api/health', async (_req, res) => {
 const start = async () => {
   try {
     await sequelize.authenticate();
-    console.log('Database connection established.');
+    await sequelize.sync();
+    console.log('Database connection established and models synced.');
   } catch (error) {
     console.log('Database connection failed:', error);
     console.log('Server will start without database connection.');

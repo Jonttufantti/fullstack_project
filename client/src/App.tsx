@@ -1,39 +1,39 @@
-import { Container, Typography, Box, Paper } from '@mui/material';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { type ReactElement } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
-function App() {
+function ProtectedRoute({ children }: { children: ReactElement }) {
+  const { token } = useAuth();
+  return token ? children : <Navigate to="/login" replace />;
+}
+
+function AppRoutes() {
   return (
-    <Container maxWidth="md">
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            textAlign: 'center',
-            borderRadius: 2,
-          }}
-        >
-          <AccountBalanceWalletIcon
-            sx={{ fontSize: 64, color: 'primary.main', mb: 2 }}
-          />
-          <Typography variant="h3" component="h1" gutterBottom>
-            Freelancer Finance
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Financial management for freelancers and small businesses
-          </Typography>
-        </Paper>
-      </Box>
-    </Container>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
