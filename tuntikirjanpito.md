@@ -6,4 +6,6 @@
 | 18.2.2026 | 6 | JWT-autentikointi, käyttäjänhallinta |
 | 21.2.2026 | 3 | Docker-konfigurointi |
 | 21.2.2026 | 2 | asiakkaiden hallinta (backend) |
-| **yht** | **15** | |
+| 21.2.2026 | 3 | asiakkaiden hallinta (frontend), navigaatio |
+| 21.2.2026 | 1 | lomakevalidointi, TypeScript-korjaukset |
+| **yht** | **19** | |

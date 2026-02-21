@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Clients from './pages/Clients';
 
 function ProtectedRoute({ children }: { children: ReactElement }) {
   const { token } = useAuth();
@@ -20,6 +21,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/clients"
+        element={
+          <ProtectedRoute>
+            <Clients />
           </ProtectedRoute>
         }
       />
