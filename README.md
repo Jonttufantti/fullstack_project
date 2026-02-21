@@ -24,38 +24,41 @@ A financial management tool for freelancers and small business owners. Built as 
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- PostgreSQL
-
-### Installation
+### Run with Docker (recommended)
 
 ```bash
-# Install all dependencies
+docker compose up --build
+```
+
+Open [http://localhost](http://localhost) in your browser.
+
+### Development (local)
+
+```bash
+# Start only the database
+docker compose up db
+
+# Install dependencies
 npm run install:all
 
 # Copy environment variables
 cp .env.example server/.env
-```
 
-### Development
-
-```bash
-# Start backend (port 3001)
+# Start backend (port 3001) and frontend (port 5173)
 npm run dev:server
-
-# Start frontend (port 5173)
 npm run dev:client
 ```
 
 ### API
 
 - `GET /api/health` — Health check
+- `POST /api/auth/register` — Register
+- `POST /api/auth/login` — Login
+- `GET /api/clients` — List clients (auth required)
+- `POST /api/clients` — Create client (auth required)
+- `PUT /api/clients/:id` — Update client (auth required)
+- `DELETE /api/clients/:id` — Delete client (auth required)
 
 ## Work Hours
 
-| Date | Hours | Task |
-|------|-------|------|
-| | | |
-| **Total** | **0** | |
+[tuntikirjanpito.md](tuntikirjanpito.md)
