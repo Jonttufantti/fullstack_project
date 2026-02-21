@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: freelancer
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: freelancer_finances
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U freelancer -d freelancer_finances"]
+      interval: 5s
+      retries: 5
+
+  backend:
+    build: ./server
+    environment:
+      DATABASE_URL: postgres://freelancer:password@db:5432/freelancer_finances
+      JWT_SECRET: dev-secret-change-in-production
+      NODE_ENV: production
+      PORT: 3001
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./client
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
