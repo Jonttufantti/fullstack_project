@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { sequelize } from './config/database';
 import authRoutes from './routes/auth';
 import clientRoutes from './routes/clients';
+import invoiceRoutes from './routes/invoices';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 app.get('/api/health', async (_req, res) => {
   try {
