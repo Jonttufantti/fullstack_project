@@ -14,6 +14,7 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import { useAuth } from '../context/AuthContext';
 
 const DRAWER_WIDTH = 220;
@@ -21,6 +22,7 @@ const DRAWER_WIDTH = 220;
 const navItems = [
   { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
   { label: 'Clients', icon: <PeopleIcon />, path: '/clients' },
+  { label: 'Invoices', icon: <ReceiptIcon />, path: '/invoices' },
 ];
 
 export default function Layout({ children }: { children: ReactNode }) {

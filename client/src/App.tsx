@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
+import Invoices from './pages/Invoices';
 
 function ProtectedRoute({ children }: { children: ReactElement }) {
   const { token } = useAuth();
@@ -29,6 +30,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Clients />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/invoices"
+        element={
+          <ProtectedRoute>
+            <Invoices />
           </ProtectedRoute>
         }
       />

@@ -2,6 +2,13 @@ import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import Invoice from '../models/Invoice';
 import Client from '../models/Client';
+import PaymentTerm from '../models/PaymentTerm';
+
+const addDays = (dateStr: string, days: number): string => {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+};
 
 export const getInvoices = async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId;
@@ -28,10 +35,10 @@ export const getInvoice = async (req: Request, res: Response): Promise<void> => 
 
 export const createInvoice = async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId;
-  const { clientId, issueDate, dueDate, subtotal, vatRate = 25.5, status = 'draft' } = req.body;
+  const { clientId, issueDate, subtotal, vatRate = 25.5, status = 'draft', paymentTermId } = req.body;
 
-  if (!clientId || !issueDate || !dueDate || subtotal === undefined) {
-    res.status(400).json({ error: 'clientId, issueDate, dueDate and subtotal are required' });
+  if (!clientId || !issueDate || subtotal === undefined || !paymentTermId) {
+    res.status(400).json({ error: 'clientId, issueDate, subtotal and paymentTermId are required' });
     return;
   }
 
@@ -41,6 +48,14 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
     res.status(404).json({ error: 'Client not found' });
     return;
   }
+
+  // Hae maksuehto ja laske eräpäivä: laskun päiväys + nettopäivät
+  const paymentTerm = await PaymentTerm.findByPk(paymentTermId);
+  if (!paymentTerm) {
+    res.status(404).json({ error: 'Payment term not found' });
+    return;
+  }
+  const dueDate = addDays(issueDate, paymentTerm.netDays);
 
   // Laske ALV-summa ja kokonaissumma backendissä
   const vatAmount = Number(subtotal) * Number(vatRate) / 100;
@@ -58,7 +73,7 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
   });
   const invoiceNumber = `${year}-${(count + 1).toString().padStart(4, '0')}`;
 
-  const invoice = await Invoice.create({
+  const created = await Invoice.create({
     userId,
     clientId,
     invoiceNumber,
@@ -69,6 +84,16 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
     vatRate,
     vatAmount,
     totalAmount,
+    paymentTermId,
+    // Snapshot — säilyy vaikka maksuehto myöhemmin muuttuisi tai poistuisi
+    discountPercent: paymentTerm.discountPercent,
+    discountDays: paymentTerm.discountDays,
+  });
+
+  // Haetaan uudelleen Client-assosiaatioineen, jotta frontend saa asiakkaan nimen
+  const invoice = await Invoice.findOne({
+    where: { id: created.id },
+    include: [{ model: Client, attributes: ['id', 'name', 'email', 'address'] }],
   });
 
   res.status(201).json(invoice);
@@ -82,7 +107,7 @@ export const updateInvoice = async (req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const { issueDate, dueDate, subtotal, vatRate, status } = req.body;
+  const { issueDate, dueDate, subtotal, vatRate, status, discountPercent, discountDays } = req.body;
 
   // Laske summat uudelleen jos subtotal tai vatRate muuttuu
   const newSubtotal = subtotal !== undefined ? Number(subtotal) : Number(invoice.subtotal);
@@ -98,6 +123,8 @@ export const updateInvoice = async (req: Request, res: Response): Promise<void> 
     vatAmount: newVatAmount,
     totalAmount: newTotalAmount,
     status: status ?? invoice.status,
+    discountPercent: discountPercent !== undefined ? discountPercent : invoice.discountPercent,
+    discountDays: discountDays !== undefined ? discountDays : invoice.discountDays,
   });
 
   res.json(invoice);

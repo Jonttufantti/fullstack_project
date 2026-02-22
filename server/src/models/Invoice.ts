@@ -2,6 +2,7 @@ import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/database";
 import User from "./User";
 import Client from "./Client";
+import PaymentTerm from "./PaymentTerm";
 
 class Invoice extends Model {
   declare id: number;
@@ -15,6 +16,9 @@ class Invoice extends Model {
   declare vatRate: number;
   declare vatAmount: number;
   declare totalAmount: number;
+  declare discountPercent: number | null;
+  declare discountDays: number | null;
+  declare paymentTermId: number | null;
 }
 
 Invoice.init(
@@ -66,6 +70,18 @@ Invoice.init(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    discountPercent: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: true,
+    },
+    discountDays: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    paymentTermId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   },
   {
     sequelize,
@@ -79,5 +95,9 @@ User.hasMany(Invoice, { foreignKey: "userId" });
 
 Invoice.belongsTo(Client, { foreignKey: "clientId" });
 Client.hasMany(Invoice, { foreignKey: "clientId" });
+
+// onDelete: SET NULL — jos maksuehto poistetaan, lasku säilyttää snapshot-tiedot
+Invoice.belongsTo(PaymentTerm, { foreignKey: "paymentTermId", onDelete: 'SET NULL' });
+PaymentTerm.hasMany(Invoice, { foreignKey: "paymentTermId" });
 
 export default Invoice;
