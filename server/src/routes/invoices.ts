@@ -5,6 +5,7 @@ import {
   createInvoice,
   updateInvoice,
   deleteInvoice,
+  downloadInvoicePdf,
 } from '../controllers/invoiceController';
 import { requireAuth } from '../middleware/authMiddleware';
 
@@ -13,6 +14,7 @@ const router = Router();
 router.use(requireAuth);
 
 router.get('/', getInvoices);
+router.get('/:id/pdf', downloadInvoicePdf);
 router.get('/:id', getInvoice);
 router.post('/', createInvoice);
 router.put('/:id', updateInvoice);

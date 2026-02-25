@@ -3,6 +3,8 @@ import { Op } from 'sequelize';
 import Invoice from '../models/Invoice';
 import Client from '../models/Client';
 import PaymentTerm from '../models/PaymentTerm';
+import User from '../models/User';
+import { generateInvoicePdf } from '../utils/generateInvoicePdf';
 
 const addDays = (dateStr: string, days: number): string => {
   const d = new Date(dateStr + 'T00:00:00');
@@ -139,4 +141,56 @@ export const deleteInvoice = async (req: Request, res: Response): Promise<void> 
   }
   await invoice.destroy();
   res.status(204).send();
+};
+
+export const downloadInvoicePdf = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId;
+
+  const invoice = await Invoice.findOne({
+    where: { id: req.params.id, userId },
+    include: [{ model: Client }],
+  });
+  if (!invoice) {
+    res.status(404).json({ error: 'Invoice not found' });
+    return;
+  }
+
+  const user = await User.findByPk(userId);
+  if (!user) {
+    res.status(404).json({ error: 'User not found' });
+    return;
+  }
+
+  const client = (invoice as any).Client as Client;
+
+  const pdfBuffer = generateInvoicePdf({
+    invoiceNumber: invoice.invoiceNumber,
+    issueDate: String(invoice.issueDate),
+    dueDate: String(invoice.dueDate),
+    subtotal: Number(invoice.subtotal),
+    vatRate: Number(invoice.vatRate),
+    vatAmount: Number(invoice.vatAmount),
+    totalAmount: Number(invoice.totalAmount),
+    discountPercent: invoice.discountPercent ? Number(invoice.discountPercent) : null,
+    discountDays: invoice.discountDays ?? null,
+    seller: {
+      name: user.name,
+      email: user.email,
+      businessId: user.businessId,
+      address: user.address,
+      iban: user.iban,
+    },
+    buyer: {
+      name: client.name,
+      email: client.email ?? null,
+      address: client.address ?? null,
+    },
+  });
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="lasku-${invoice.invoiceNumber}.pdf"`
+  );
+  res.send(pdfBuffer);
 };

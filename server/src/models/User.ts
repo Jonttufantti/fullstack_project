@@ -6,6 +6,9 @@ class User extends Model {
   declare email: string;
   declare passwordHash: string;
   declare name: string;
+  declare businessId: string | null;
+  declare address: string | null;
+  declare iban: string | null;
 }
 
 User.init(
@@ -30,6 +33,18 @@ User.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    businessId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    iban: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {
