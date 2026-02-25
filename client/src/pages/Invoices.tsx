@@ -14,8 +14,10 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import Layout from "../components/Layout";
 import InvoiceDialog from "../components/InvoiceDialog";
+import InvoiceDetailDialog from "../components/InvoiceDetailDialog";
 import { useAuth } from "../context/AuthContext";
 import { type Invoice } from "../types";
 
@@ -45,12 +47,28 @@ export default function Invoices() {
   const { token } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   useEffect(() => {
     fetch("/api/invoices", { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
       .then(setInvoices);
   }, [token]);
+
+  const handleDownloadPdf = async (inv: Invoice, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const res = await fetch(`/api/invoices/${inv.id}/pdf`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `lasku-${inv.invoiceNumber}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleDelete = async (id: number) => {
     await fetch(`/api/invoices/${id}`, {
@@ -114,7 +132,12 @@ export default function Invoices() {
               </TableRow>
             ) : (
               invoices.map((inv) => (
-                <TableRow key={inv.id}>
+                <TableRow
+                  key={inv.id}
+                  hover
+                  onClick={() => setSelectedInvoice(inv)}
+                  sx={{ cursor: "pointer" }}
+                >
                   <TableCell>{inv.invoiceNumber}</TableCell>
                   <TableCell>{inv.Client?.name ?? "—"}</TableCell>
                   <TableCell>{formatDate(inv.issueDate)}</TableCell>
@@ -130,7 +153,10 @@ export default function Invoices() {
                       sx={{ cursor: "pointer", textTransform: "capitalize" }}
                     />
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                    <IconButton size="small" onClick={(e) => handleDownloadPdf(inv, e)}>
+                      <PictureAsPdfIcon fontSize="small" />
+                    </IconButton>
                     <IconButton size="small" onClick={() => handleDelete(inv.id)}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -149,6 +175,11 @@ export default function Invoices() {
           setInvoices((prev) => [invoice, ...prev]);
           setDialogOpen(false);
         }}
+      />
+
+      <InvoiceDetailDialog
+        invoice={selectedInvoice}
+        onClose={() => setSelectedInvoice(null)}
       />
     </Layout>
   );
