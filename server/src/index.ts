@@ -6,7 +6,9 @@ import authRoutes from './routes/auth';
 import clientRoutes from './routes/clients';
 import invoiceRoutes from './routes/invoices';
 import paymentTermRoutes from './routes/paymentTerms';
+import expenseRoutes from './routes/expenses';
 import PaymentTerm from './models/PaymentTerm';
+import './models/Expense';
 
 dotenv.config();
 
@@ -20,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/payment-terms', paymentTermRoutes);
+app.use('/api/expenses', expenseRoutes);
 
 app.get('/api/health', async (_req, res) => {
   try {
