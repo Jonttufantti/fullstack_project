@@ -13,4 +13,5 @@
 | 22.2.2026 | 2      | PaymentTerm-malli, API, seed-data, refaktorointi                                                        |
 | 25.2.2026 | 5      | laskun PDF-vienti: User-malli (Y-tunnus, IBAN, osoite), jsPDF-generaattori, /invoices/:id/pdf -endpoint |
 | 25.2.2026 | 3      | laskun PDF-vienti: laskun yksityiskohdat ikkuna, PDF-latauspainike listaukseen                          |
-| **yht**   | **37** |                                                                                                         |
+| 26.2.2026 | 6      | kulujen seuranta (Expense-malli, backend CRUD, frontend lista + luontidialogi, navigaatio)              |
+| **yht**   | **43** |                                                                                                         |

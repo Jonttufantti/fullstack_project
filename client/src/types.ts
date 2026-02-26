@@ -15,6 +15,14 @@ export interface Client {
   address: string;
 }
 
+export interface Expense {
+  id: number;
+  amount: string;
+  date: string;
+  category: string;
+  description: string | null;
+}
+
 export interface Invoice {
   id: number;
   clientId: number;
