@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { fn, col, literal } from 'sequelize';
 import Invoice from '../models/Invoice';
 import Expense from '../models/Expense';
+import Client from '../models/Client';
 
 export const getDashboard = async (req: Request, res: Response) => {
   const userId = req.user!.id;
@@ -45,6 +46,21 @@ export const getDashboard = async (req: Request, res: Response) => {
     raw: true,
   }) as unknown as { month: string; total: string }[];
 
+  // 5 most recent invoices
+  const recentInvoices = await Invoice.findAll({
+    where: { userId },
+    include: [{ model: Client, attributes: ['name'] }],
+    order: [['issueDate', 'DESC']],
+    limit: 5,
+  });
+
+  // 5 most recent expenses
+  const recentExpenses = await Expense.findAll({
+    where: { userId },
+    order: [['date', 'DESC']],
+    limit: 5,
+  });
+
   res.json({
     totalInvoiced,
     totalPaid,
@@ -54,5 +70,7 @@ export const getDashboard = async (req: Request, res: Response) => {
       month: r.month,
       total: parseFloat(r.total),
     })),
+    recentInvoices,
+    recentExpenses,
   });
 };
