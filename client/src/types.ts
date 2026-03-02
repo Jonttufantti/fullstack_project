@@ -23,6 +23,16 @@ export interface Expense {
   description: string | null;
 }
 
+export interface DashboardData {
+  totalInvoiced: number;
+  totalPaid: number;
+  totalUnpaid: number;
+  totalExpenses: number;
+  monthlyExpenses: { month: string; total: number }[];
+  recentInvoices: (Invoice & { Client?: { name: string } })[];
+  recentExpenses: Expense[];
+}
+
 export interface Invoice {
   id: number;
   clientId: number;

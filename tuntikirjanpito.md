@@ -14,4 +14,6 @@
 | 25.2.2026 | 5      | laskun PDF-vienti: User-malli (Y-tunnus, IBAN, osoite), jsPDF-generaattori, /invoices/:id/pdf -endpoint |
 | 25.2.2026 | 3      | laskun PDF-vienti: laskun yksityiskohdat ikkuna, PDF-latauspainike listaukseen                          |
 | 26.2.2026 | 6      | kulujen seuranta (Expense-malli, backend CRUD, frontend lista + luontidialogi, navigaatio)              |
-| **yht**   | **43** |                                                                                                         |
+| 2.3.2026  | 3      | Dashboard backend — /api/dashboard endpoint, aggregaattikyselyt (SUM, GROUP BY), viimeisimmät laskut ja kulut, TypeScript-korjaukset |
+| 2.3.2026  | 4      | Dashboard frontend — yhteenvetokortit, Recharts-pylväskaavio (kulut kk:ittain), viimeisimmät laskut ja kulut -taulukot, Recharts-asennus |
+| **yht**   | **50** |                                                                                                         |

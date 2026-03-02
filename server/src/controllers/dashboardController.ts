@@ -5,7 +5,7 @@ import Expense from '../models/Expense';
 import Client from '../models/Client';
 
 export const getDashboard = async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = req.user!.userId;
 
   // Invoice summaries
   const invoiceAgg = await Invoice.findAll({
