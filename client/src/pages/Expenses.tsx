@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import Layout from "../components/Layout";
 import ExpenseDialog from "../components/ExpenseDialog";
 import { useAuth } from "../context/AuthContext";
@@ -28,6 +29,7 @@ export default function Expenses() {
   const { token } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     fetch("/api/expenses", { headers: { Authorization: `Bearer ${token}` } })
@@ -78,6 +80,9 @@ export default function Expenses() {
                   <TableCell>{expense.description ?? "—"}</TableCell>
                   <TableCell align="right">{formatEur(expense.amount)}</TableCell>
                   <TableCell align="right">
+                    <IconButton size="small" onClick={() => { setEditingExpense(expense); setDialogOpen(true); }}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
                     <IconButton size="small" onClick={() => handleDelete(expense.id)}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -91,10 +96,16 @@ export default function Expenses() {
 
       <ExpenseDialog
         open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
+        onClose={() => { setDialogOpen(false); setEditingExpense(null); }}
+        expense={editingExpense ?? undefined}
         onCreated={(expense) => {
           setExpenses((prev) => [expense, ...prev]);
           setDialogOpen(false);
+        }}
+        onUpdated={(updated) => {
+          setExpenses((prev) => prev.map((e) => e.id === updated.id ? updated : e));
+          setDialogOpen(false);
+          setEditingExpense(null);
         }}
       />
     </Layout>

@@ -22,7 +22,7 @@ interface Props {
 
 const VAT_RATES = [
   { label: "25,5 % (yleinen)", value: 25.5 },
-  { label: "14 % (elintarvikkeet)", value: 14 },
+  { label: "13,5 % (elintarvikkeet)", value: 13.5 },
   { label: "10 % (kulttuuri, liikunta)", value: 10 },
   { label: "0 % (veroton)", value: 0 },
 ];
@@ -62,7 +62,9 @@ export default function InvoiceDialog({ open, onClose, onCreated }: Props) {
       setClients(c);
       setPaymentTerms(p);
       // Aseta oletukseksi "30 päivää netto"
-      const defaultTerm = p.find((t: PaymentTerm) => t.label === "30 päivää netto");
+      const defaultTerm = p.find(
+        (t: PaymentTerm) => t.label === "30 päivää netto",
+      );
       if (defaultTerm) setPaymentTermId(defaultTerm.id);
     });
   }, [open, token]);
@@ -106,7 +108,9 @@ export default function InvoiceDialog({ open, onClose, onCreated }: Props) {
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <form onSubmit={handleSubmit}>
         <DialogTitle>New invoice</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}
+        >
           {serverError && <Alert severity="error">{serverError}</Alert>}
 
           <TextField
@@ -181,7 +185,8 @@ export default function InvoiceDialog({ open, onClose, onCreated }: Props) {
             <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
               {selectedTerm?.discountPercent && (
                 <Typography variant="body2" color="text.secondary">
-                  Early payment ({selectedTerm.discountDays} pv): -{Number(selectedTerm.discountPercent).toFixed(0)}%
+                  Early payment ({selectedTerm.discountDays} pv): -
+                  {Number(selectedTerm.discountPercent).toFixed(0)}%
                 </Typography>
               )}
               <Typography variant="body2" color="text.secondary">

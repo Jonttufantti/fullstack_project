@@ -16,4 +16,5 @@
 | 26.2.2026 | 6      | kulujen seuranta (Expense-malli, backend CRUD, frontend lista + luontidialogi, navigaatio)              |
 | 2.3.2026  | 3      | Dashboard backend — /api/dashboard endpoint, aggregaattikyselyt (SUM, GROUP BY), viimeisimmät laskut ja kulut, TypeScript-korjaukset |
 | 2.3.2026  | 4      | Dashboard frontend — yhteenvetokortit, Recharts-pylväskaavio (kulut kk:ittain), viimeisimmät laskut ja kulut -taulukot, Recharts-asennus |
-| **yht**   | **50** |                                                                                                         |
+| 5.3.2026  | 3      | kulujen muokkaustoiminnallisuus (ExpenseDialog dual-mode, PUT-endpoint, muokkausnappi listaan)          |
+| **yht**   | **53** |                                                                                                         |

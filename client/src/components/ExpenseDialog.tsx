@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -25,37 +25,91 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onCreated: (expense: Expense) => void;
+  expense?: Expense;
+  onUpdated?: (expense: Expense) => void;
 }
 
-export default function ExpenseDialog({ open, onClose, onCreated }: Props) {
+export default function ExpenseDialog({
+  open,
+  onClose,
+  onCreated,
+  expense,
+  onUpdated,
+}: Props) {
   const { token } = useAuth();
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
 
+  useEffect(() => {
+    if (expense) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAmount(expense.amount);
+      setDate(expense.date);
+      setCategory(expense.category);
+      setDescription(expense.description ?? "");
+    } else {
+      setAmount("");
+      setDate(new Date().toISOString().split("T")[0]);
+      setCategory("");
+      setDescription("");
+    }
+  }, [expense]);
+
   const handleSubmit = async () => {
-    const res = await fetch("/api/expenses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ amount: Number(amount), date, category, description }),
-    });
-    if (!res.ok) return;
-    const expense = await res.json();
-    onCreated(expense);
-    setAmount("");
-    setDate(new Date().toISOString().split("T")[0]);
-    setCategory("");
-    setDescription("");
+    const isEditing = expense ? true : false;
+    if (!isEditing) {
+      const res = await fetch("/api/expenses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: Number(amount),
+          date,
+          category,
+          description,
+        }),
+      });
+      if (!res.ok) return;
+      const saved = await res.json();
+      onCreated(saved);
+      setAmount("");
+      setDate(new Date().toISOString().split("T")[0]);
+      setCategory("");
+      setDescription("");
+    } else {
+      const res = await fetch(`/api/expenses/${expense?.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: Number(amount),
+          date,
+          category,
+          description,
+        }),
+      });
+      if (!res.ok) return;
+      const saved = await res.json();
+      onUpdated?.(saved);
+      setAmount("");
+      setDate(new Date().toISOString().split("T")[0]);
+      setCategory("");
+      setDescription("");
+    }
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Uusi kulu</DialogTitle>
-      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
+      <DialogTitle>{expense ? "Muokkaa kulua" : "Uusi kulu"}</DialogTitle>
+      <DialogContent
+        sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}
+      >
         <TextField
           label="Summa (€)"
           type="number"
