@@ -78,7 +78,7 @@ export default function Expenses() {
                   <TableCell>{formatDate(expense.date)}</TableCell>
                   <TableCell>{expense.category}</TableCell>
                   <TableCell>{expense.description ?? "—"}</TableCell>
-                  <TableCell align="right">{formatEur(expense.amount)}</TableCell>
+                  <TableCell align="right">{formatEur(expense.totalAmount)}</TableCell>
                   <TableCell align="right">
                     <IconButton size="small" onClick={() => { setEditingExpense(expense); setDialogOpen(true); }}>
                       <EditIcon fontSize="small" />

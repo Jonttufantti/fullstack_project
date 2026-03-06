@@ -12,14 +12,17 @@ export const getExpenses = async (req: Request, res: Response): Promise<void> =>
 
 export const createExpense = async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId;
-  const { amount, date, category, description } = req.body;
+  const { subtotal, date, category, description, title, vatRate } = req.body;
 
-  if (!amount || !date || !category) {
-    res.status(400).json({ error: 'amount, date and category are required' });
+  if (!subtotal || !date || !category) {
+    res.status(400).json({ error: 'subtotal, date and category are required' });
     return;
   }
 
-  const expense = await Expense.create({ userId, amount, date, category, description });
+  const rate = vatRate ?? 0;
+  const vatAmount = (Number(subtotal) * rate) / 100;
+  const totalAmount = Number(subtotal) + vatAmount;
+  const expense = await Expense.create({ userId, subtotal, date, category, description, title, vatRate: rate, vatAmount, totalAmount });
   res.status(201).json(expense);
 };
 
@@ -31,12 +34,19 @@ export const updateExpense = async (req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const { amount, date, category, description } = req.body;
+  const { subtotal, date, category, description, title, vatRate } = req.body;
+  const newSubtotal = subtotal ?? expense.subtotal;
+  const newRate = vatRate !== undefined ? vatRate : expense.vatRate;
+  const newVatAmount = (Number(newSubtotal) * Number(newRate)) / 100;
   await expense.update({
-    amount: amount ?? expense.amount,
+    subtotal: newSubtotal,
     date: date ?? expense.date,
     category: category ?? expense.category,
     description: description !== undefined ? description : expense.description,
+    title: title !== undefined ? title : expense.title,
+    vatRate: newRate,
+    vatAmount: newVatAmount,
+    totalAmount: Number(newSubtotal) + newVatAmount,
   });
   res.json(expense);
 };

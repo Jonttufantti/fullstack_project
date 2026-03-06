@@ -5,10 +5,14 @@ import User from "./User";
 class Expense extends Model {
   declare id: number;
   declare userId: number;
-  declare amount: number;
+  declare title: string;
+  declare subtotal: number;
+  declare vatAmount: number;
+  declare totalAmount: number;
   declare date: Date;
   declare category: string;
   declare description: string;
+  declare vatRate: number;
 }
 
 Expense.init(
@@ -22,7 +26,7 @@ Expense.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    amount: {
+    subtotal: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
@@ -34,9 +38,28 @@ Expense.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     description: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    vatRate: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    vatAmount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    totalAmount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
     },
   },
   {

@@ -187,7 +187,7 @@ export default function Dashboard() {
                     <TableRow key={exp.id} hover>
                       <TableCell>{formatDate(exp.date)}</TableCell>
                       <TableCell>{exp.category}</TableCell>
-                      <TableCell align="right">{formatEur(Number(exp.amount))}</TableCell>
+                      <TableCell align="right">{formatEur(Number(exp.totalAmount))}</TableCell>
                     </TableRow>
                   ))
                 )}

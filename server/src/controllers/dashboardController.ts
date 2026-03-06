@@ -25,7 +25,7 @@ export const getDashboard = async (req: Request, res: Response) => {
   // Total expenses
   const expenseAgg = await Expense.findOne({
     where: { userId },
-    attributes: [[fn('SUM', col('amount')), 'total']],
+    attributes: [[fn('SUM', col('totalAmount')), 'total']],
     raw: true,
   }) as unknown as { total: string | null };
 
@@ -39,7 +39,7 @@ export const getDashboard = async (req: Request, res: Response) => {
     },
     attributes: [
       [fn('TO_CHAR', col('date'), 'YYYY-MM'), 'month'],
-      [fn('SUM', col('amount')), 'total'],
+      [fn('SUM', col('totalAmount')), 'total'],
     ],
     group: [fn('TO_CHAR', col('date'), 'YYYY-MM')],
     order: [[fn('TO_CHAR', col('date'), 'YYYY-MM'), 'ASC']],

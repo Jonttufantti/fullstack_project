@@ -17,10 +17,14 @@ export interface Client {
 
 export interface Expense {
   id: number;
-  amount: string;
+  title: string | null;
+  subtotal: string;
+  vatAmount: string;
+  totalAmount: string;
   date: string;
   category: string;
   description: string | null;
+  vatRate: string;
 }
 
 export interface DashboardData {

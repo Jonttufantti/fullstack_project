@@ -17,4 +17,5 @@
 | 2.3.2026  | 3      | Dashboard backend — /api/dashboard endpoint, aggregaattikyselyt (SUM, GROUP BY), viimeisimmät laskut ja kulut, TypeScript-korjaukset |
 | 2.3.2026  | 4      | Dashboard frontend — yhteenvetokortit, Recharts-pylväskaavio (kulut kk:ittain), viimeisimmät laskut ja kulut -taulukot, Recharts-asennus |
 | 5.3.2026  | 3      | kulujen muokkaustoiminnallisuus (ExpenseDialog dual-mode, PUT-endpoint, muokkausnappi listaan)          |
-| **yht**   | **53** |                                                                                                         |
+| 6.3.2026  | 3      | kuluihin ALV-kanta, ostopaikka/otsikko-kenttä, ALV-laskennan näyttö dialogissa, subtotal/vatAmount/totalAmount-kenttien lisäys malliin |
+| **yht**   | **56** |                                                                                                         |

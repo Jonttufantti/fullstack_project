@@ -149,7 +149,7 @@ export default function Invoices() {
                       label={inv.status}
                       color={statusColor(inv.status)}
                       size="small"
-                      onClick={() => handleStatusChange(inv)}
+                      onClick={(e) => { e.stopPropagation(); handleStatusChange(inv); }}
                       sx={{ cursor: "pointer", textTransform: "capitalize" }}
                     />
                   </TableCell>
