@@ -1,36 +1,61 @@
-import { Request, Response } from 'express';
-import Expense from '../models/Expense';
+import { Request, Response } from "express";
+import "multer";
+import Expense from "../models/Expense";
+import { uploadToCloudinary } from "../utils/cloudinary";
 
-export const getExpenses = async (req: Request, res: Response): Promise<void> => {
+export const getExpenses = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const userId = req.user!.userId;
   const expenses = await Expense.findAll({
     where: { userId },
-    order: [['date', 'DESC']],
+    order: [["date", "DESC"]],
   });
   res.json(expenses);
 };
 
-export const createExpense = async (req: Request, res: Response): Promise<void> => {
+export const createExpense = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const userId = req.user!.userId;
-  const { subtotal, date, category, description, title, vatRate } = req.body;
+  const { subtotal, date, category, description, title, vatRate, receiptURL } =
+    req.body;
 
   if (!subtotal || !date || !category) {
-    res.status(400).json({ error: 'subtotal, date and category are required' });
+    res.status(400).json({ error: "subtotal, date and category are required" });
     return;
   }
 
   const rate = vatRate ?? 0;
   const vatAmount = (Number(subtotal) * rate) / 100;
   const totalAmount = Number(subtotal) + vatAmount;
-  const expense = await Expense.create({ userId, subtotal, date, category, description, title, vatRate: rate, vatAmount, totalAmount });
+  const expense = await Expense.create({
+    userId,
+    subtotal,
+    date,
+    category,
+    description,
+    title,
+    vatRate: rate,
+    vatAmount,
+    totalAmount,
+    receiptURL,
+  });
   res.status(201).json(expense);
 };
 
-export const updateExpense = async (req: Request, res: Response): Promise<void> => {
+export const updateExpense = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const userId = req.user!.userId;
-  const expense = await Expense.findOne({ where: { id: req.params.id, userId } });
+  const expense = await Expense.findOne({
+    where: { id: req.params.id, userId },
+  });
   if (!expense) {
-    res.status(404).json({ error: 'Expense not found' });
+    res.status(404).json({ error: "Expense not found" });
     return;
   }
 
@@ -51,13 +76,41 @@ export const updateExpense = async (req: Request, res: Response): Promise<void> 
   res.json(expense);
 };
 
-export const deleteExpense = async (req: Request, res: Response): Promise<void> => {
+export const deleteExpense = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const userId = req.user!.userId;
-  const expense = await Expense.findOne({ where: { id: req.params.id, userId } });
+  const expense = await Expense.findOne({
+    where: { id: req.params.id, userId },
+  });
   if (!expense) {
-    res.status(404).json({ error: 'Expense not found' });
+    res.status(404).json({ error: "Expense not found" });
     return;
   }
   await expense.destroy();
   res.status(204).send();
+};
+
+export const uploadReceipt = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const userId = req.user!.userId;
+  const expense = await Expense.findOne({
+    where: { id: req.params.id, userId },
+  });
+  if (!expense) {
+    res.status(404).json({ error: "Expense not found" });
+    return;
+  }
+
+  if (!req.file) {
+    res.status(400).json({ error: "No file uploaded" });
+    return;
+  }
+
+  const url = await uploadToCloudinary(req.file.buffer);
+  await expense.update({ receiptURL: url });
+  res.json(expense);
 };

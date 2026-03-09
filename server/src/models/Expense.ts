@@ -13,6 +13,7 @@ class Expense extends Model {
   declare category: string;
   declare description: string;
   declare vatRate: number;
+  declare receiptURL: string | null;
 }
 
 Expense.init(
@@ -60,6 +61,10 @@ Expense.init(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: 0,
+    },
+    receiptURL: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {
