@@ -25,6 +25,7 @@ export interface Expense {
   category: string;
   description: string | null;
   vatRate: string;
+  receiptURL: string | null;
 }
 
 export interface DashboardData {

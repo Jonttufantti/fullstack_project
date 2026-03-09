@@ -52,6 +52,7 @@ export default function ExpenseDialog({
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [vatRate, setVatRate] = useState(25.5);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
 
   const subtotalNum = Number(subtotal) || 0;
   const vatAmount = (subtotalNum * vatRate) / 100;
@@ -74,7 +75,8 @@ export default function ExpenseDialog({
       setDescription("");
       setVatRate(25.5);
     }
-  }, [expense]);
+    setReceiptFile(null);
+  }, [expense, open]);
 
   const handleSubmit = async () => {
     const isEditing = expense ? true : false;
@@ -95,7 +97,17 @@ export default function ExpenseDialog({
         }),
       });
       if (!res.ok) return;
-      const saved = await res.json();
+      let saved = await res.json();
+      if (receiptFile) {
+        const form = new FormData();
+        form.append("receipt", receiptFile);
+        const uploadRes = await fetch(`/api/expenses/${saved.id}/receipt`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+        if (uploadRes.ok) saved = await uploadRes.json();
+      }
       onCreated(saved);
       setTitle("");
       setSubtotal("");
@@ -103,6 +115,7 @@ export default function ExpenseDialog({
       setCategory("");
       setDescription("");
       setVatRate(25.5);
+      setReceiptFile(null);
     } else {
       const res = await fetch(`/api/expenses/${expense?.id}`, {
         method: "PUT",
@@ -120,7 +133,17 @@ export default function ExpenseDialog({
         }),
       });
       if (!res.ok) return;
-      const saved = await res.json();
+      let saved = await res.json();
+      if (receiptFile) {
+        const form = new FormData();
+        form.append("receipt", receiptFile);
+        const uploadRes = await fetch(`/api/expenses/${saved.id}/receipt`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+        if (uploadRes.ok) saved = await uploadRes.json();
+      }
       onUpdated?.(saved);
       setTitle("");
       setSubtotal("");
@@ -128,6 +151,7 @@ export default function ExpenseDialog({
       setCategory("");
       setDescription("");
       setVatRate(25.5);
+      setReceiptFile(null);
     }
   };
 
@@ -199,6 +223,32 @@ export default function ExpenseDialog({
           multiline
           rows={2}
         />
+        <Box>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Kuitti (valinnainen)
+          </Typography>
+          {expense?.receiptURL && !receiptFile && (
+            <Box sx={{ mb: 1 }}>
+              <img
+                src={expense.receiptURL}
+                alt="Kuitti"
+                style={{ maxHeight: 120, maxWidth: "100%", borderRadius: 4, display: "block", marginBottom: 4 }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                <a href={expense.receiptURL} target="_blank" rel="noreferrer">Avaa kuitti</a>
+              </Typography>
+            </Box>
+          )}
+          <Button variant="outlined" component="label" size="small">
+            {receiptFile ? receiptFile.name : expense?.receiptURL ? "Vaihda kuva" : "Valitse kuva"}
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+            />
+          </Button>
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Peruuta</Button>

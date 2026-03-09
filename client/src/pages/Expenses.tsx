@@ -14,6 +14,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import Layout from "../components/Layout";
 import ExpenseDialog from "../components/ExpenseDialog";
 import { useAuth } from "../context/AuthContext";
@@ -62,6 +63,7 @@ export default function Expenses() {
               <TableCell>Kategoria</TableCell>
               <TableCell>Kuvaus</TableCell>
               <TableCell align="right">Summa</TableCell>
+              <TableCell>Kuitti</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -79,6 +81,13 @@ export default function Expenses() {
                   <TableCell>{expense.category}</TableCell>
                   <TableCell>{expense.description ?? "—"}</TableCell>
                   <TableCell align="right">{formatEur(expense.totalAmount)}</TableCell>
+                  <TableCell>
+                    {expense.receiptURL ? (
+                      <IconButton size="small" component="a" href={expense.receiptURL} target="_blank" rel="noreferrer" title="Avaa kuitti">
+                        <ReceiptIcon fontSize="small" color="primary" />
+                      </IconButton>
+                    ) : "—"}
+                  </TableCell>
                   <TableCell align="right">
                     <IconButton size="small" onClick={() => { setEditingExpense(expense); setDialogOpen(true); }}>
                       <EditIcon fontSize="small" />
