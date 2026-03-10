@@ -20,4 +20,5 @@
 | 6.3.2026  | 3      | kuluihin ALV-kanta, ostopaikka/otsikko-kenttä, ALV-laskennan näyttö dialogissa, subtotal/vatAmount/totalAmount-kenttien lisäys malliin      |
 | 8.3.2026  | 8      | Cloudinary-integraatio backendiin: cloudinary + multer -paketit, receiptURL-kenttä Expense-malliin, uploadToCloudinary-apufunktio           |
 | 9.3.2026  | 7      | Cloudinary-integraatio frontendiin: tiedostovalitsin ja kuvan esikatselu ExpenseDialog-komponenttiin, kuitti-sarake ja -ikoni kulut-listaan |
-| **yht**   | **71** |                                                                                                                                             |
+| 10.3.2026 | 6      | maksupäiväkentät laskuihin ja kuluihin (suoritusperuste ALV-raportointia varten), laskujen muokkaustoiminnallisuus, aikavyöhykebugin korjaus eräpäivälaskennassa |
+| **yht**   | **77** |                                                                                                                                             |

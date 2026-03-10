@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import Layout from "../components/Layout";
 import InvoiceDialog from "../components/InvoiceDialog";
@@ -47,6 +48,7 @@ export default function Invoices() {
   const { token } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   useEffect(() => {
@@ -159,6 +161,9 @@ export default function Invoices() {
                     <IconButton size="small" onClick={(e) => handleDownloadPdf(inv, e)}>
                       <PictureAsPdfIcon fontSize="small" />
                     </IconButton>
+                    <IconButton size="small" onClick={() => { setEditingInvoice(inv); setDialogOpen(true); }}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
                     <IconButton size="small" onClick={() => handleDelete(inv.id)}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -172,20 +177,22 @@ export default function Invoices() {
 
       <InvoiceDialog
         open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
+        onClose={() => { setDialogOpen(false); setEditingInvoice(null); }}
+        invoice={editingInvoice ?? undefined}
         onCreated={(invoice) => {
           setInvoices((prev) => [invoice, ...prev]);
           setDialogOpen(false);
+        }}
+        onUpdated={(updated) => {
+          setInvoices((prev) => prev.map((inv) => inv.id === updated.id ? updated : inv));
+          setDialogOpen(false);
+          setEditingInvoice(null);
         }}
       />
 
       <InvoiceDetailDialog
         invoice={selectedInvoice}
         onClose={() => setSelectedInvoice(null)}
-        onUpdated={(updated) => {
-          setInvoices((prev) => prev.map((inv) => inv.id === updated.id ? updated : inv));
-          setSelectedInvoice(updated);
-        }}
       />
     </Layout>
   );

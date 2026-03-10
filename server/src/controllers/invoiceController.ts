@@ -9,7 +9,10 @@ import { generateInvoicePdf } from '../utils/generateInvoicePdf';
 const addDays = (dateStr: string, days: number): string => {
   const d = new Date(dateStr + 'T00:00:00');
   d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 };
 
 export const getInvoices = async (req: Request, res: Response): Promise<void> => {
@@ -109,7 +112,16 @@ export const updateInvoice = async (req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const { issueDate, dueDate, subtotal, vatRate, status, discountPercent, discountDays, paymentDate } = req.body;
+  const { clientId, issueDate, dueDate, subtotal, vatRate, status, discountPercent, discountDays, paymentDate } = req.body;
+
+  // Varmistetaan että asiakas kuuluu tälle käyttäjälle (jos clientId muuttuu)
+  if (clientId !== undefined) {
+    const client = await Client.findOne({ where: { id: clientId, userId } });
+    if (!client) {
+      res.status(404).json({ error: 'Client not found' });
+      return;
+    }
+  }
 
   // Laske summat uudelleen jos subtotal tai vatRate muuttuu
   const newSubtotal = subtotal !== undefined ? Number(subtotal) : Number(invoice.subtotal);
@@ -118,6 +130,7 @@ export const updateInvoice = async (req: Request, res: Response): Promise<void> 
   const newTotalAmount = newSubtotal + newVatAmount;
 
   await invoice.update({
+    clientId: clientId ?? invoice.clientId,
     issueDate: issueDate ?? invoice.issueDate,
     dueDate: dueDate ?? invoice.dueDate,
     subtotal: newSubtotal,
@@ -130,7 +143,12 @@ export const updateInvoice = async (req: Request, res: Response): Promise<void> 
     paymentDate: paymentDate !== undefined ? (paymentDate || null) : invoice.paymentDate,
   });
 
-  res.json(invoice);
+  // Haetaan uudelleen Client-assosiaatioineen
+  const updated = await Invoice.findOne({
+    where: { id: invoice.id },
+    include: [{ model: Client, attributes: ['id', 'name', 'email', 'address'] }],
+  });
+  res.json(updated);
 };
 
 export const deleteInvoice = async (req: Request, res: Response): Promise<void> => {

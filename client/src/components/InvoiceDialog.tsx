@@ -18,6 +18,8 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onCreated: (invoice: Invoice) => void;
+  invoice?: Invoice;
+  onUpdated?: (invoice: Invoice) => void;
 }
 
 const VAT_RATES = [
@@ -27,12 +29,15 @@ const VAT_RATES = [
   { label: "0 % (veroton)", value: 0 },
 ];
 
-export default function InvoiceDialog({ open, onClose, onCreated }: Props) {
+export default function InvoiceDialog({ open, onClose, onCreated, invoice, onUpdated }: Props) {
   const { token } = useAuth();
+  const isEditing = !!invoice;
+
   const [clients, setClients] = useState<Client[]>([]);
   const [paymentTerms, setPaymentTerms] = useState<PaymentTerm[]>([]);
   const [clientId, setClientId] = useState("");
   const [issueDate, setIssueDate] = useState("");
+  const [paymentDate, setPaymentDate] = useState("");
   const [paymentTermId, setPaymentTermId] = useState<number | "">("");
   const [subtotal, setSubtotal] = useState("");
   const [vatRate, setVatRate] = useState(25.5);
@@ -61,53 +66,95 @@ export default function InvoiceDialog({ open, onClose, onCreated }: Props) {
     ]).then(([c, p]) => {
       setClients(c);
       setPaymentTerms(p);
-      // Aseta oletukseksi "30 päivää netto"
-      const defaultTerm = p.find(
-        (t: PaymentTerm) => t.label === "30 päivää netto",
-      );
-      if (defaultTerm) setPaymentTermId(defaultTerm.id);
+
+      if (invoice) {
+        // Muokkaustila: täytetään kentät olemassa olevasta laskusta
+        setClientId(String(invoice.clientId));
+        setIssueDate(invoice.issueDate);
+        setPaymentDate(invoice.paymentDate ?? "");
+        setSubtotal(invoice.subtotal);
+        setVatRate(Number(invoice.vatRate));
+        setPaymentTermId(invoice.paymentTermId ?? "");
+      } else {
+        // Luontitila: aseta oletukseksi "30 päivää netto"
+        const defaultTerm = p.find((t: PaymentTerm) => t.label === "30 päivää netto");
+        if (defaultTerm) setPaymentTermId(defaultTerm.id);
+      }
     });
-  }, [open, token]);
+  }, [open, token, invoice]);
 
   const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault();
     setServerError("");
     setLoading(true);
 
-    const res = await fetch("/api/invoices", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        clientId: Number(clientId),
-        issueDate,
-        subtotal: Number(subtotal),
-        vatRate,
-        paymentTermId,
-      }),
-    });
+    if (isEditing) {
+      // Laske eräpäivä valitun maksuehdon mukaan
+      let dueDate: string | undefined;
+      if (selectedTerm && issueDate) {
+        const d = new Date(issueDate + "T00:00:00");
+        d.setDate(d.getDate() + selectedTerm.netDays);
+        dueDate = d.toISOString().split("T")[0];
+      }
 
-    const data = await res.json();
-    setLoading(false);
+      const res = await fetch(`/api/invoices/${invoice!.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          clientId: Number(clientId),
+          issueDate,
+          dueDate,
+          paymentDate: paymentDate || null,
+          subtotal: Number(subtotal),
+          vatRate,
+          discountPercent: selectedTerm?.discountPercent ?? null,
+          discountDays: selectedTerm?.discountDays ?? null,
+        }),
+      });
 
-    if (!res.ok) {
-      setServerError(data.error || "Failed to create invoice");
-      return;
+      const data = await res.json();
+      setLoading(false);
+      if (!res.ok) {
+        setServerError(data.error || "Failed to update invoice");
+        return;
+      }
+      onUpdated?.(data);
+    } else {
+      const res = await fetch("/api/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          clientId: Number(clientId),
+          issueDate,
+          subtotal: Number(subtotal),
+          vatRate,
+          paymentTermId,
+        }),
+      });
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (!res.ok) {
+        setServerError(data.error || "Failed to create invoice");
+        return;
+      }
+
+      onCreated(data);
+      setClientId("");
+      setIssueDate("");
+      setPaymentDate("");
+      setSubtotal("");
+      setVatRate(25.5);
     }
-
-    onCreated(data);
-    setClientId("");
-    setIssueDate("");
-    setSubtotal("");
-    setVatRate(25.5);
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <form onSubmit={handleSubmit}>
-        <DialogTitle>New invoice</DialogTitle>
+        <DialogTitle>
+          {isEditing ? `Muokkaa laskua ${invoice!.invoiceNumber}` : "New invoice"}
+        </DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}
         >
@@ -127,14 +174,25 @@ export default function InvoiceDialog({ open, onClose, onCreated }: Props) {
             ))}
           </TextField>
 
-          <TextField
-            label="Issue date"
-            type="date"
-            value={issueDate}
-            onChange={(e) => setIssueDate(e.target.value)}
-            required
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <TextField
+              label="Laskutuspäivä"
+              type="date"
+              value={issueDate}
+              onChange={(e) => setIssueDate(e.target.value)}
+              required
+              slotProps={{ inputLabel: { shrink: true } }}
+              sx={{ flex: 1 }}
+            />
+            <TextField
+              label="Maksupäivä (valinnainen)"
+              type="date"
+              value={paymentDate}
+              onChange={(e) => setPaymentDate(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              sx={{ flex: 1 }}
+            />
+          </Box>
 
           <TextField
             select
@@ -201,7 +259,7 @@ export default function InvoiceDialog({ open, onClose, onCreated }: Props) {
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
           <Button type="submit" variant="contained" disabled={loading}>
-            {loading ? "Saving..." : "Create invoice"}
+            {loading ? "Saving..." : isEditing ? "Tallenna muutokset" : "Create invoice"}
           </Button>
         </DialogActions>
       </form>

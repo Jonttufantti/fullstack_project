@@ -53,5 +53,6 @@ export interface Invoice {
   totalAmount: string;
   discountPercent: string | null;
   discountDays: number | null;
+  paymentTermId: number | null;
   Client?: { id: number; name: string; email: string; address: string };
 }

@@ -180,20 +180,24 @@ export default function ExpenseDialog({
           onChange={(e) => setSubtotal(e.target.value)}
           required
         />
-        <TextField
-          label="Laskutuspäivä"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-        />
-        <TextField
-          label="Maksupäivä (valinnainen)"
-          type="date"
-          value={paymentDate}
-          onChange={(e) => setPaymentDate(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <TextField
+            label="Laskutuspäivä"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            sx={{ flex: 1 }}
+          />
+          <TextField
+            label="Maksupäivä (valinnainen)"
+            type="date"
+            value={paymentDate}
+            onChange={(e) => setPaymentDate(e.target.value)}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={{ flex: 1 }}
+          />
+        </Box>
         <TextField
           label="Kategoria"
           select
