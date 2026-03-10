@@ -22,6 +22,7 @@ export interface Expense {
   vatAmount: string;
   totalAmount: string;
   date: string;
+  paymentDate: string | null;
   category: string;
   description: string | null;
   vatRate: string;
@@ -44,6 +45,7 @@ export interface Invoice {
   invoiceNumber: string;
   issueDate: string;
   dueDate: string;
+  paymentDate: string | null;
   status: "draft" | "sent" | "paid";
   subtotal: string;
   vatRate: string;

@@ -20,7 +20,7 @@ export const createExpense = async (
   res: Response,
 ): Promise<void> => {
   const userId = req.user!.userId;
-  const { subtotal, date, category, description, title, vatRate, receiptURL } =
+  const { subtotal, date, category, description, title, vatRate, receiptURL, paymentDate } =
     req.body;
 
   if (!subtotal || !date || !category) {
@@ -42,6 +42,7 @@ export const createExpense = async (
     vatAmount,
     totalAmount,
     receiptURL,
+    paymentDate: paymentDate ?? null,
   });
   res.status(201).json(expense);
 };
@@ -59,7 +60,7 @@ export const updateExpense = async (
     return;
   }
 
-  const { subtotal, date, category, description, title, vatRate } = req.body;
+  const { subtotal, date, category, description, title, vatRate, paymentDate } = req.body;
   const newSubtotal = subtotal ?? expense.subtotal;
   const newRate = vatRate !== undefined ? vatRate : expense.vatRate;
   const newVatAmount = (Number(newSubtotal) * Number(newRate)) / 100;
@@ -72,6 +73,7 @@ export const updateExpense = async (
     vatRate: newRate,
     vatAmount: newVatAmount,
     totalAmount: Number(newSubtotal) + newVatAmount,
+    paymentDate: paymentDate !== undefined ? (paymentDate || null) : expense.paymentDate,
   });
   res.json(expense);
 };

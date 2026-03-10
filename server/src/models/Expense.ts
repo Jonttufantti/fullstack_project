@@ -14,6 +14,7 @@ class Expense extends Model {
   declare description: string;
   declare vatRate: number;
   declare receiptURL: string | null;
+  declare paymentDate: string | null;
 }
 
 Expense.init(
@@ -64,6 +65,10 @@ Expense.init(
     },
     receiptURL: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    paymentDate: {
+      type: DataTypes.DATEONLY,
       allowNull: true,
     },
   },

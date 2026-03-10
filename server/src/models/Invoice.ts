@@ -19,6 +19,7 @@ class Invoice extends Model {
   declare discountPercent: number | null;
   declare discountDays: number | null;
   declare paymentTermId: number | null;
+  declare paymentDate: string | null;
 }
 
 Invoice.init(
@@ -80,6 +81,10 @@ Invoice.init(
     },
     paymentTermId: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    paymentDate: {
+      type: DataTypes.DATEONLY,
       allowNull: true,
     },
   },

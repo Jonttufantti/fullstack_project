@@ -49,6 +49,7 @@ export default function ExpenseDialog({
   const [title, setTitle] = useState("");
   const [subtotal, setSubtotal] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [paymentDate, setPaymentDate] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [vatRate, setVatRate] = useState(25.5);
@@ -64,6 +65,7 @@ export default function ExpenseDialog({
       setTitle(expense.title ?? "");
       setSubtotal(expense.subtotal);
       setDate(expense.date);
+      setPaymentDate(expense.paymentDate ?? "");
       setCategory(expense.category);
       setDescription(expense.description ?? "");
       setVatRate(Number(expense.vatRate));
@@ -71,6 +73,7 @@ export default function ExpenseDialog({
       setTitle("");
       setSubtotal("");
       setDate(new Date().toISOString().split("T")[0]);
+      setPaymentDate("");
       setCategory("");
       setDescription("");
       setVatRate(25.5);
@@ -91,6 +94,7 @@ export default function ExpenseDialog({
           title,
           subtotal: Number(subtotal),
           date,
+          paymentDate: paymentDate || null,
           category,
           description,
           vatRate,
@@ -112,6 +116,7 @@ export default function ExpenseDialog({
       setTitle("");
       setSubtotal("");
       setDate(new Date().toISOString().split("T")[0]);
+      setPaymentDate("");
       setCategory("");
       setDescription("");
       setVatRate(25.5);
@@ -127,6 +132,7 @@ export default function ExpenseDialog({
           title,
           subtotal: Number(subtotal),
           date,
+          paymentDate: paymentDate || null,
           category,
           description,
           vatRate,
@@ -148,6 +154,7 @@ export default function ExpenseDialog({
       setTitle("");
       setSubtotal("");
       setDate(new Date().toISOString().split("T")[0]);
+      setPaymentDate("");
       setCategory("");
       setDescription("");
       setVatRate(25.5);
@@ -174,11 +181,18 @@ export default function ExpenseDialog({
           required
         />
         <TextField
-          label="Päivämäärä"
+          label="Laskutuspäivä"
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
           required
+        />
+        <TextField
+          label="Maksupäivä (valinnainen)"
+          type="date"
+          value={paymentDate}
+          onChange={(e) => setPaymentDate(e.target.value)}
+          slotProps={{ inputLabel: { shrink: true } }}
         />
         <TextField
           label="Kategoria"

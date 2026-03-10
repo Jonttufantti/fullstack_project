@@ -59,7 +59,8 @@ export default function Expenses() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Päivämäärä</TableCell>
+              <TableCell>Laskutuspäivä</TableCell>
+              <TableCell>Maksupäivä</TableCell>
               <TableCell>Kategoria</TableCell>
               <TableCell>Kuvaus</TableCell>
               <TableCell align="right">Summa</TableCell>
@@ -70,7 +71,7 @@ export default function Expenses() {
           <TableBody>
             {expenses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ color: "text.secondary" }}>
+                <TableCell colSpan={7} align="center" sx={{ color: "text.secondary" }}>
                   Ei kuluja vielä
                 </TableCell>
               </TableRow>
@@ -78,6 +79,7 @@ export default function Expenses() {
               expenses.map((expense) => (
                 <TableRow key={expense.id} hover>
                   <TableCell>{formatDate(expense.date)}</TableCell>
+                  <TableCell>{expense.paymentDate ? formatDate(expense.paymentDate) : "—"}</TableCell>
                   <TableCell>{expense.category}</TableCell>
                   <TableCell>{expense.description ?? "—"}</TableCell>
                   <TableCell align="right">{formatEur(expense.totalAmount)}</TableCell>

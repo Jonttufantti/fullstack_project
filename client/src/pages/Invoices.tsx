@@ -115,8 +115,9 @@ export default function Invoices() {
             <TableRow>
               <TableCell>#</TableCell>
               <TableCell>Client</TableCell>
-              <TableCell>Issue date</TableCell>
-              <TableCell>Due date</TableCell>
+              <TableCell>Laskutuspäivä</TableCell>
+              <TableCell>Eräpäivä</TableCell>
+              <TableCell>Maksupäivä</TableCell>
               <TableCell align="right">Total</TableCell>
               <TableCell>Payment terms</TableCell>
               <TableCell>Status</TableCell>
@@ -126,7 +127,7 @@ export default function Invoices() {
           <TableBody>
             {invoices.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ color: "text.secondary" }}>
+                <TableCell colSpan={9} align="center" sx={{ color: "text.secondary" }}>
                   No invoices yet
                 </TableCell>
               </TableRow>
@@ -142,6 +143,7 @@ export default function Invoices() {
                   <TableCell>{inv.Client?.name ?? "—"}</TableCell>
                   <TableCell>{formatDate(inv.issueDate)}</TableCell>
                   <TableCell>{formatDate(inv.dueDate)}</TableCell>
+                  <TableCell>{inv.paymentDate ? formatDate(inv.paymentDate) : "—"}</TableCell>
                   <TableCell align="right">{formatEur(inv.totalAmount)}</TableCell>
                   <TableCell>{formatPaymentTerms(inv)}</TableCell>
                   <TableCell>
@@ -180,6 +182,10 @@ export default function Invoices() {
       <InvoiceDetailDialog
         invoice={selectedInvoice}
         onClose={() => setSelectedInvoice(null)}
+        onUpdated={(updated) => {
+          setInvoices((prev) => prev.map((inv) => inv.id === updated.id ? updated : inv));
+          setSelectedInvoice(updated);
+        }}
       />
     </Layout>
   );

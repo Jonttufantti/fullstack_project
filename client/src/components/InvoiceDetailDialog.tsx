@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,6 +9,7 @@ import {
   Box,
   Divider,
   Chip,
+  TextField,
 } from "@mui/material";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { type Invoice } from "../types";
@@ -16,6 +18,7 @@ import { useAuth } from "../context/AuthContext";
 interface Props {
   invoice: Invoice | null;
   onClose: () => void;
+  onUpdated?: (invoice: Invoice) => void;
 }
 
 const formatDate = (dateStr: string) =>
@@ -30,10 +33,27 @@ const statusColor = (status: Invoice["status"]) => {
   return "default";
 };
 
-export default function InvoiceDetailDialog({ invoice, onClose }: Props) {
+export default function InvoiceDetailDialog({ invoice, onClose, onUpdated }: Props) {
   const { token } = useAuth();
+  const [paymentDate, setPaymentDate] = useState("");
+
+  useEffect(() => {
+    setPaymentDate(invoice?.paymentDate ?? "");
+  }, [invoice]);
 
   if (!invoice) return null;
+
+  const handleSavePaymentDate = async () => {
+    const res = await fetch(`/api/invoices/${invoice.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ paymentDate: paymentDate || null }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      onUpdated?.(updated);
+    }
+  };
 
   const handleDownloadPdf = async () => {
     const res = await fetch(`/api/invoices/${invoice.id}/pdf`, {
@@ -88,6 +108,20 @@ export default function InvoiceDetailDialog({ invoice, onClose }: Props) {
         <Typography variant="overline" color="text.secondary">Päivämäärät</Typography>
         <Row label="Laskutuspäivä" value={formatDate(invoice.issueDate)} />
         <Row label="Eräpäivä" value={formatDate(invoice.dueDate)} />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+          <TextField
+            label="Maksupäivä"
+            type="date"
+            size="small"
+            value={paymentDate}
+            onChange={(e) => setPaymentDate(e.target.value)}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={{ flex: 1 }}
+          />
+          <Button size="small" variant="outlined" onClick={handleSavePaymentDate}>
+            Tallenna
+          </Button>
+        </Box>
 
         <Divider sx={{ my: 2 }} />
 

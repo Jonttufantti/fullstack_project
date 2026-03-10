@@ -109,7 +109,7 @@ export const updateInvoice = async (req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const { issueDate, dueDate, subtotal, vatRate, status, discountPercent, discountDays } = req.body;
+  const { issueDate, dueDate, subtotal, vatRate, status, discountPercent, discountDays, paymentDate } = req.body;
 
   // Laske summat uudelleen jos subtotal tai vatRate muuttuu
   const newSubtotal = subtotal !== undefined ? Number(subtotal) : Number(invoice.subtotal);
@@ -127,6 +127,7 @@ export const updateInvoice = async (req: Request, res: Response): Promise<void> 
     status: status ?? invoice.status,
     discountPercent: discountPercent !== undefined ? discountPercent : invoice.discountPercent,
     discountDays: discountDays !== undefined ? discountDays : invoice.discountDays,
+    paymentDate: paymentDate !== undefined ? (paymentDate || null) : invoice.paymentDate,
   });
 
   res.json(invoice);
