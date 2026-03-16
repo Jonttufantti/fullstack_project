@@ -20,6 +20,7 @@ import Layout from "../components/Layout";
 import InvoiceDialog from "../components/InvoiceDialog";
 import InvoiceDetailDialog from "../components/InvoiceDetailDialog";
 import { useAuth } from "../context/AuthContext";
+import { useApiFetch } from "../hooks/useApiFetch";
 import { type Invoice } from "../types";
 
 const statusColor = (status: Invoice["status"]) => {
@@ -46,22 +47,21 @@ const formatPaymentTerms = (inv: Invoice) => {
 
 export default function Invoices() {
   const { token } = useAuth();
+  const apiFetch = useApiFetch();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   useEffect(() => {
-    fetch("/api/invoices", { headers: { Authorization: `Bearer ${token}` } })
+    apiFetch("/api/invoices")
       .then((r) => r.json())
       .then(setInvoices);
   }, [token]);
 
   const handleDownloadPdf = async (inv: Invoice, e: React.MouseEvent) => {
     e.stopPropagation();
-    const res = await fetch(`/api/invoices/${inv.id}/pdf`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await apiFetch(`/api/invoices/${inv.id}/pdf`);
     if (!res.ok) return;
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
@@ -73,10 +73,7 @@ export default function Invoices() {
   };
 
   const handleDelete = async (id: number) => {
-    await fetch(`/api/invoices/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await apiFetch(`/api/invoices/${id}`, { method: "DELETE" });
     setInvoices((prev) => prev.filter((inv) => inv.id !== id));
   };
 
@@ -87,12 +84,9 @@ export default function Invoices() {
       paid: "draft",
     };
     const newStatus = next[invoice.status];
-    const res = await fetch(`/api/invoices/${invoice.id}`, {
+    const res = await apiFetch(`/api/invoices/${invoice.id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
     });
     if (res.ok) {

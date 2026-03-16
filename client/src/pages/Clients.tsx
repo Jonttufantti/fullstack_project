@@ -16,18 +16,18 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from '../components/Layout';
 import ClientDialog from '../components/ClientDialog';
 import { useAuth } from '../context/AuthContext';
+import { useApiFetch } from '../hooks/useApiFetch';
 import { type Client } from '../types';
 
 export default function Clients() {
   const { token } = useAuth();
+  const apiFetch = useApiFetch();
   const [clients, setClients] = useState<Client[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchClients = async () => {
-      const res = await fetch('/api/clients', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await apiFetch('/api/clients');
       const data = await res.json();
       setClients(data);
     };
@@ -36,10 +36,7 @@ export default function Clients() {
   }, [token]);
 
   const handleDelete = async (id: number) => {
-    await fetch(`/api/clients/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await apiFetch(`/api/clients/${id}`, { method: 'DELETE' });
     setClients((prev) => prev.filter((c) => c.id !== id));
   };
 

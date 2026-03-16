@@ -18,6 +18,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import Layout from "../components/Layout";
 import ExpenseDialog from "../components/ExpenseDialog";
 import { useAuth } from "../context/AuthContext";
+import { useApiFetch } from "../hooks/useApiFetch";
 import { type Expense } from "../types";
 
 const formatDate = (dateStr: string) =>
@@ -28,21 +29,19 @@ const formatEur = (value: string) =>
 
 export default function Expenses() {
   const { token } = useAuth();
+  const apiFetch = useApiFetch();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
-    fetch("/api/expenses", { headers: { Authorization: `Bearer ${token}` } })
+    apiFetch("/api/expenses")
       .then((r) => r.json())
       .then(setExpenses);
   }, [token]);
 
   const handleDelete = async (id: number) => {
-    await fetch(`/api/expenses/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await apiFetch(`/api/expenses/${id}`, { method: "DELETE" });
     setExpenses((prev) => prev.filter((e) => e.id !== id));
   };
 

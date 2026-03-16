@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
+import { useApiFetch } from '../hooks/useApiFetch';
 import { type DashboardData } from '../types';
 
 const formatEur = (value: number) =>
@@ -61,10 +62,11 @@ function SummaryCard({ label, value, color }: SummaryCardProps) {
 
 export default function Dashboard() {
   const { token } = useAuth();
+  const apiFetch = useApiFetch();
   const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
-    fetch('/api/dashboard', { headers: { Authorization: `Bearer ${token}` } })
+    apiFetch('/api/dashboard')
       .then(r => r.json())
       .then(setData);
   }, [token]);
