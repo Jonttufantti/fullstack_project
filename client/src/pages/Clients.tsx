@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import Layout from '../components/Layout';
 import ClientDialog from '../components/ClientDialog';
 import { useAuth } from '../context/AuthContext';
@@ -24,6 +25,7 @@ export default function Clients() {
   const apiFetch = useApiFetch();
   const [clients, setClients] = useState<Client[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -44,7 +46,7 @@ export default function Clients() {
     <Layout>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5">Clients</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setDialogOpen(true)}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => { setEditingClient(null); setDialogOpen(true); }}>
           New client
         </Button>
       </Box>
@@ -73,6 +75,9 @@ export default function Clients() {
                   <TableCell>{client.email}</TableCell>
                   <TableCell>{client.phone}</TableCell>
                   <TableCell align="right">
+                    <IconButton size="small" onClick={() => { setEditingClient(client); setDialogOpen(true); }}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
                     <IconButton size="small" onClick={() => handleDelete(client.id)}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -85,11 +90,18 @@ export default function Clients() {
       </Paper>
 
       <ClientDialog
+        key={editingClient?.id ?? 'new'}
         open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onCreated={(client) => {
-          setClients((prev) => [...prev, client]);
+        onClose={() => { setDialogOpen(false); setEditingClient(null); }}
+        client={editingClient ?? undefined}
+        onSaved={(saved) => {
+          setClients((prev) =>
+            editingClient
+              ? prev.map((c) => (c.id === saved.id ? saved : c))
+              : [...prev, saved]
+          );
           setDialogOpen(false);
+          setEditingClient(null);
         }}
       />
     </Layout>

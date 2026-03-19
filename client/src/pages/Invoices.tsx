@@ -173,12 +173,12 @@ export default function Invoices() {
         open={dialogOpen}
         onClose={() => { setDialogOpen(false); setEditingInvoice(null); }}
         invoice={editingInvoice ?? undefined}
-        onCreated={(invoice) => {
-          setInvoices((prev) => [invoice, ...prev]);
-          setDialogOpen(false);
-        }}
-        onUpdated={(updated) => {
-          setInvoices((prev) => prev.map((inv) => inv.id === updated.id ? updated : inv));
+        onSaved={(saved) => {
+          setInvoices((prev) =>
+            editingInvoice
+              ? prev.map((inv) => inv.id === saved.id ? saved : inv)
+              : [saved, ...prev]
+          );
           setDialogOpen(false);
           setEditingInvoice(null);
         }}

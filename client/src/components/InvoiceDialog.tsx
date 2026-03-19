@@ -17,9 +17,8 @@ import { type Client, type Invoice, type PaymentTerm } from "../types";
 interface Props {
   open: boolean;
   onClose: () => void;
-  onCreated: (invoice: Invoice) => void;
+  onSaved: (invoice: Invoice) => void;
   invoice?: Invoice;
-  onUpdated?: (invoice: Invoice) => void;
 }
 
 const VAT_RATES = [
@@ -29,7 +28,12 @@ const VAT_RATES = [
   { label: "0 % (veroton)", value: 0 },
 ];
 
-export default function InvoiceDialog({ open, onClose, onCreated, invoice, onUpdated }: Props) {
+export default function InvoiceDialog({
+  open,
+  onClose,
+  onSaved,
+  invoice,
+}: Props) {
   const { token } = useAuth();
   const isEditing = !!invoice;
 
@@ -77,7 +81,9 @@ export default function InvoiceDialog({ open, onClose, onCreated, invoice, onUpd
         setPaymentTermId(invoice.paymentTermId ?? "");
       } else {
         // Luontitila: aseta oletukseksi "30 päivää netto"
-        const defaultTerm = p.find((t: PaymentTerm) => t.label === "30 päivää netto");
+        const defaultTerm = p.find(
+          (t: PaymentTerm) => t.label === "30 päivää netto",
+        );
         if (defaultTerm) setPaymentTermId(defaultTerm.id);
       }
     });
@@ -99,7 +105,10 @@ export default function InvoiceDialog({ open, onClose, onCreated, invoice, onUpd
 
       const res = await fetch(`/api/invoices/${invoice!.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           clientId: Number(clientId),
           issueDate,
@@ -118,11 +127,14 @@ export default function InvoiceDialog({ open, onClose, onCreated, invoice, onUpd
         setServerError(data.error || "Failed to update invoice");
         return;
       }
-      onUpdated?.(data);
+      onSaved(data);
     } else {
       const res = await fetch("/api/invoices", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           clientId: Number(clientId),
           issueDate,
@@ -140,7 +152,7 @@ export default function InvoiceDialog({ open, onClose, onCreated, invoice, onUpd
         return;
       }
 
-      onCreated(data);
+      onSaved(data);
       setClientId("");
       setIssueDate("");
       setPaymentDate("");
@@ -153,7 +165,7 @@ export default function InvoiceDialog({ open, onClose, onCreated, invoice, onUpd
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <form onSubmit={handleSubmit}>
         <DialogTitle>
-          {isEditing ? `Muokkaa laskua ${invoice!.invoiceNumber}` : "New invoice"}
+          {isEditing ? `Edit invoice ${invoice!.invoiceNumber}` : "New invoice"}
         </DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}
@@ -259,7 +271,11 @@ export default function InvoiceDialog({ open, onClose, onCreated, invoice, onUpd
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
           <Button type="submit" variant="contained" disabled={loading}>
-            {loading ? "Saving..." : isEditing ? "Tallenna muutokset" : "Create invoice"}
+            {loading
+              ? "Saving..."
+              : isEditing
+                ? "Tallenna muutokset"
+                : "Create invoice"}
           </Button>
         </DialogActions>
       </form>

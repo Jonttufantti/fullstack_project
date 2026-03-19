@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -7,46 +7,53 @@ import {
   TextField,
   Button,
   Alert,
-} from '@mui/material';
-import { useAuth } from '../context/AuthContext';
-import { type Client } from '../types';
+} from "@mui/material";
+import { useAuth } from "../context/AuthContext";
+import { type Client } from "../types";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onCreated: (client: Client) => void;
+  onSaved: (client: Client) => void;
+  client?: Client;
 }
 
 const isValidEmail = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-const isValidPhone = (phone: string) =>
-  /^[+\d][\d\s-]{6,14}$/.test(phone);
+const isValidPhone = (phone: string) => /^[+\d][\d\s-]{6,14}$/.test(phone);
 
-export default function ClientDialog({ open, onClose, onCreated }: Props) {
+export default function ClientDialog({
+  open,
+  onClose,
+  onSaved,
+  client,
+}: Props) {
   const { token } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  const [name, setName] = useState(client?.name ?? "");
+  const [email, setEmail] = useState(client?.email ?? "");
+  const [phone, setPhone] = useState(client?.phone ?? "");
+  const [address, setAddress] = useState(client?.address ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [serverError, setServerError] = useState('');
+  const [serverError, setServerError] = useState("");
+  const isEditing = !!client;
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (email && !isValidEmail(email)) {
-      newErrors.email = 'Enter a valid email address';
+      newErrors.email = "Enter a valid email address";
     }
     if (phone && !isValidPhone(phone)) {
-      newErrors.phone = 'Enter a valid phone number (e.g. 040 1234567 or +358401234567)';
+      newErrors.phone =
+        "Enter a valid phone number (e.g. 040 1234567 or +358401234567)";
     }
     return newErrors;
   };
 
   const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault();
-    setServerError('');
+    setServerError("");
 
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -56,36 +63,69 @@ export default function ClientDialog({ open, onClose, onCreated }: Props) {
     setErrors({});
     setLoading(true);
 
-    const res = await fetch('/api/clients', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name, email, phone, address }),
-    });
+    if (isEditing) {
+      const res = await fetch(`/api/clients/${client!.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          address,
+        }),
+      });
 
-    const data = await res.json();
-    setLoading(false);
+      const data = await res.json();
+      setLoading(false);
+      if (!res.ok) {
+        setServerError(data.error || "Failed to update client");
+        return;
+      }
+      onSaved?.(data);
+    } else {
+      const res = await fetch("/api/clients", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          address,
+        }),
+      });
 
-    if (!res.ok) {
-      setServerError(data.error || 'Failed to create client');
-      return;
+      const data = await res.json();
+      setLoading(false);
+
+      if (!res.ok) {
+        setServerError(data.error || "Failed to create client");
+        return;
+      }
+
+      onSaved(data);
+      setName("");
+      setEmail("");
+      setPhone("");
+      setAddress("");
+      setErrors({});
     }
-
-    onCreated(data);
-    setName('');
-    setEmail('');
-    setPhone('');
-    setAddress('');
-    setErrors({});
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <form onSubmit={handleSubmit}>
-        <DialogTitle>New client</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+        <DialogTitle>
+          {isEditing ? `Edit client ${client!.name}` : "New client"}
+        </DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}
+        >
           {serverError && <Alert severity="error">{serverError}</Alert>}
           <TextField
             label="Name"
@@ -106,7 +146,7 @@ export default function ClientDialog({ open, onClose, onCreated }: Props) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             error={!!errors.phone}
-            helperText={errors.phone ?? 'e.g. 040 1234567 or +358401234567'}
+            helperText={errors.phone ?? "e.g. 040 1234567 or +358401234567"}
           />
           <TextField
             label="Address"
@@ -119,7 +159,7 @@ export default function ClientDialog({ open, onClose, onCreated }: Props) {
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
           <Button type="submit" variant="contained" disabled={loading}>
-            {loading ? 'Saving...' : 'Save'}
+            {loading ? "Saving..." : "Save"}
           </Button>
         </DialogActions>
       </form>

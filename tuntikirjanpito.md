@@ -21,4 +21,6 @@
 | 8.3.2026  | 8      | Cloudinary-integraatio backendiin: cloudinary + multer -paketit, receiptURL-kenttä Expense-malliin, uploadToCloudinary-apufunktio           |
 | 9.3.2026  | 7      | Cloudinary-integraatio frontendiin: tiedostovalitsin ja kuvan esikatselu ExpenseDialog-komponenttiin, kuitti-sarake ja -ikoni kulut-listaan |
 | 10.3.2026 | 6      | maksupäiväkentät laskuihin ja kuluihin (suoritusperuste ALV-raportointia varten), laskujen muokkaustoiminnallisuus, aikavyöhykebugin korjaus eräpäivälaskennassa |
-| **yht**   | **77** |                                                                                                                                             |
+| 16.3.2026 | 3      | useApiFetch-hook: keskitetty autentikointi ja automaattinen 401-uudelleenohjaus kirjautumissivulle, Docker-deployment-debuggaus              |
+| 19.3.2026 | 3      | asiakkaiden muokkaustoiminnallisuus (ClientDialog dual-mode, muokkausnappi listaan, onSaved-pattern), InvoiceDialog refaktorointi onSaved-patterniin |
+| **yht**   | **83** |                                                                                                                                             |
