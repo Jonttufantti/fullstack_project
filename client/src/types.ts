@@ -34,7 +34,7 @@ export interface DashboardData {
   totalPaid: number;
   totalUnpaid: number;
   totalExpenses: number;
-  monthlyExpenses: { month: string; total: number }[];
+  monthlyExpenses: { month: string; expenses: number; invoices: number }[];
   recentInvoices: (Invoice & { Client?: { name: string } })[];
   recentExpenses: Expense[];
 }

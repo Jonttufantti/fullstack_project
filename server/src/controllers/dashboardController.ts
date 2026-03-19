@@ -31,20 +31,51 @@ export const getDashboard = async (req: Request, res: Response) => {
 
   const totalExpenses = parseFloat(expenseAgg?.total ?? '0');
 
-  // Monthly expenses for chart (last 6 months)
-  const monthlyExpenses = await Expense.findAll({
+  // Monthly expenses for chart — kassaperuste: vain rivit joilla paymentDate on asetettu
+  const rawMonthlyExpenses = await Expense.findAll({
     where: {
       userId,
-      date: { [Symbol.for('gte')]: literal("NOW() - INTERVAL '6 months'") },
+      paymentDate: {
+        [Symbol.for('ne')]: null,
+        [Symbol.for('gte')]: literal("DATE_TRUNC('month', NOW()) - INTERVAL '5 months'"),
+      },
     },
     attributes: [
-      [fn('TO_CHAR', col('date'), 'YYYY-MM'), 'month'],
+      [fn('TO_CHAR', col('paymentDate'), 'YYYY-MM'), 'month'],
       [fn('SUM', col('totalAmount')), 'total'],
     ],
-    group: [fn('TO_CHAR', col('date'), 'YYYY-MM')],
-    order: [[fn('TO_CHAR', col('date'), 'YYYY-MM'), 'ASC']],
+    group: [fn('TO_CHAR', col('paymentDate'), 'YYYY-MM')],
     raw: true,
   }) as unknown as { month: string; total: string }[];
+
+  // Monthly paid invoices for chart — same 6-month window, grouped by paymentDate (kassaperuste)
+  const rawMonthlyInvoices = await Invoice.findAll({
+    where: {
+      userId,
+      status: 'paid',
+      paymentDate: { [Symbol.for('gte')]: literal("DATE_TRUNC('month', NOW()) - INTERVAL '5 months'") },
+    },
+    attributes: [
+      [fn('TO_CHAR', col('paymentDate'), 'YYYY-MM'), 'month'],
+      [fn('SUM', col('totalAmount')), 'total'],
+    ],
+    group: [fn('TO_CHAR', col('paymentDate'), 'YYYY-MM')],
+    raw: true,
+  }) as unknown as { month: string; total: string }[];
+
+  const expenseByMonth = new Map(rawMonthlyExpenses.map(r => [r.month, parseFloat(r.total)]));
+  const invoiceByMonth = new Map(rawMonthlyInvoices.map(r => [r.month, parseFloat(r.total)]));
+
+  const now = new Date();
+  const monthlyExpenses = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return {
+      month: key,
+      expenses: expenseByMonth.get(key) ?? 0,
+      invoices: invoiceByMonth.get(key) ?? 0,
+    };
+  });
 
   // 5 most recent invoices
   const recentInvoices = await Invoice.findAll({
@@ -66,10 +97,7 @@ export const getDashboard = async (req: Request, res: Response) => {
     totalPaid,
     totalUnpaid,
     totalExpenses,
-    monthlyExpenses: monthlyExpenses.map(r => ({
-      month: r.month,
-      total: parseFloat(r.total),
-    })),
+    monthlyExpenses,
     recentInvoices,
     recentExpenses,
   });

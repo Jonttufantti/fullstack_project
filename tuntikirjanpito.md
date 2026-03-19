@@ -23,4 +23,5 @@
 | 10.3.2026 | 6      | maksupäiväkentät laskuihin ja kuluihin (suoritusperuste ALV-raportointia varten), laskujen muokkaustoiminnallisuus, aikavyöhykebugin korjaus eräpäivälaskennassa |
 | 16.3.2026 | 3      | useApiFetch-hook: keskitetty autentikointi ja automaattinen 401-uudelleenohjaus kirjautumissivulle, Docker-deployment-debuggaus              |
 | 19.3.2026 | 3      | asiakkaiden muokkaustoiminnallisuus (ClientDialog dual-mode, muokkausnappi listaan, onSaved-pattern), InvoiceDialog refaktorointi onSaved-patterniin |
-| **yht**   | **83** |                                                                                                                                             |
+| 19.3.2026 | 2      | dashboard-kaavio: aina 6 kuukautta näkyvissä, kassavirta-näkymä (maksetut laskut + kulut paymentDate-perusteisesti), Legend-komponentti |
+| **yht**   | **85** |                                                                                                                                             |
